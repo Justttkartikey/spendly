@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Daily Expense Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+/* ── Variables ── */
+:root {
+  --bg:       #0f0e11;
+  --surface:  #1a1820;
+  --surface2: #221f2a;
+  --border:   #2e2b38;
+  --accent:   #c9f53b;
+  --accent2:  #7c5cfc;
+  --accent3:  #fc5c7d;
+  --text:     #f0edf8;
+  --muted:    #7b7690;
+  --success:  #3bdc8f;
+  --danger:   #fc5c7d;
+  --r:        16px;
+}
+
+/* ── Reset ── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  padding:2rem 1rem 4rem;
+  background-image:
+    radial-gradient(ellipse 60% 40% at 80% 10%, rgba(124,92,252,0.18) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 30% at 10% 90%, rgba(201,245,59,0.1) 0%, transparent 60%);
+}
+
+/* ── Layout ── */
+.app{max-width:900px;margin:0 auto}
+
+/* ── Header ── */
+.app-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:2.5rem;flex-wrap:wrap;gap:1rem;
+}
+.logo{display:flex;align-items:baseline;gap:0.4rem}
+.logo-word{
+  font-family:'DM Serif Display',serif;
+  font-size:2rem;color:var(--text);letter-spacing:-0.5px;
+}
+.logo-dot{
+  width:10px;height:10px;background:var(--accent);
+  border-radius:50%;margin-bottom:4px;
+  animation:pulse 2s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.4);opacity:.7}}
+
+#welcomeChip{
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:99px;padding:0.45rem 1rem;font-size:0.82rem;
+  color:var(--muted);display:none;align-items:center;gap:0.5rem;
+}
+#welcomeChip span{color:var(--accent);font-weight:600}
+
+/* ── Cards ── */
+.card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r);padding:1.75rem;margin-bottom:1.5rem;
+  transition:border-color .2s;
+}
+.card:hover{border-color:rgba(201,245,59,.25)}
+
+.card-title{
+  font-family:'DM Serif Display',serif;
+  font-size:1.15rem;margin-bottom:1.25rem;
+  display:flex;align-items:center;gap:0.6rem;
+}
+.card-title .badge{
+  font-family:'DM Sans',sans-serif;
+  font-size:0.7rem;font-weight:700;
+  background:var(--accent);color:#111;
+  border-radius:99px;padding:0.2rem 0.6rem;letter-spacing:.5px;text-transform:uppercase;
+}
+
+/* ── Profile section ── */
+#profileSection{}
+#profileDisplay{display:none}
+.profile-row{
+  display:flex;align-items:center;gap:1rem;flex-wrap:wrap;
+}
+.avatar{
+  width:52px;height:52px;border-radius:50%;
+  background:linear-gradient(135deg,var(--accent2),var(--accent));
+  display:flex;align-items:center;justify-content:center;
+  font-family:'DM Serif Display',serif;font-size:1.3rem;color:#111;font-style:italic;
+  flex-shrink:0;
+}
+.profile-info h2{font-size:1.1rem;font-weight:600}
+.profile-info p{font-size:0.83rem;color:var(--muted);margin-top:0.15rem}
+
+/* ── Forms ── */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+@media(max-width:520px){.form-row{grid-template-columns:1fr}}
+
+.field{display:flex;flex-direction:column;gap:0.45rem}
+label{font-size:0.78rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.7px}
+
+input,select,textarea{
+  background:var(--surface2);border:1.5px solid var(--border);
+  color:var(--text);border-radius:10px;
+  padding:0.65rem 0.9rem;font-size:0.93rem;
+  font-family:'DM Sans',sans-serif;outline:none;
+  transition:border-color .2s,box-shadow .2s;width:100%;
+}
+input:focus,select:focus,textarea:focus{
+  border-color:var(--accent2);
+  box-shadow:0 0 0 3px rgba(124,92,252,.18);
+}
+input.err,select.err{border-color:var(--danger)}
+select option{background:var(--surface2)}
+textarea{resize:vertical;min-height:70px}
+input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5)}
+
+/* ── Buttons ── */
+.btn{
+  border:none;border-radius:10px;padding:0.7rem 1.4rem;
+  font-family:'DM Sans',sans-serif;font-size:0.9rem;font-weight:600;
+  cursor:pointer;transition:transform .15s,box-shadow .15s,filter .15s;
+  display:inline-flex;align-items:center;gap:0.5rem;
+}
+.btn:hover{transform:translateY(-2px);filter:brightness(1.08)}
+.btn:active{transform:translateY(0)}
+
+.btn-primary{background:var(--accent);color:#111}
+.btn-primary:hover{box-shadow:0 6px 20px rgba(201,245,59,.3)}
+
+.btn-ghost{background:var(--surface2);color:var(--text);border:1.5px solid var(--border)}
+.btn-ghost:hover{border-color:var(--muted)}
+
+.btn-danger{background:rgba(252,92,125,.12);color:var(--danger);border:1.5px solid rgba(252,92,125,.3)}
+.btn-danger:hover{background:rgba(252,92,125,.2);box-shadow:0 4px 12px rgba(252,92,125,.2)}
+
+.btn-sm{padding:0.4rem 0.85rem;font-size:0.8rem;border-radius:8px}
+
+.btn-row{display:flex;gap:0.75rem;margin-top:1.25rem;flex-wrap:wrap}
+
+/* ── Stats bar ── */
+.stats-bar{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:1rem;margin-bottom:1.5rem;
+}
+@media(max-width:520px){.stats-bar{grid-template-columns:1fr 1fr}}
+
+.stat-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r);padding:1.2rem 1.25rem;
+  position:relative;overflow:hidden;
+  transition:border-color .2s;
+}
+.stat-card::before{
+  content:'';position:absolute;inset:0;opacity:0;
+  transition:opacity .3s;
+}
+.stat-card:hover{border-color:rgba(201,245,59,.2)}
+.stat-card:hover::before{opacity:1}
+
+.stat-label{font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;font-weight:600;margin-bottom:.5rem}
+.stat-value{font-family:'DM Serif Display',serif;font-size:1.6rem;line-height:1}
+.stat-sub{font-size:0.75rem;color:var(--muted);margin-top:.3rem}
+
+.stat-card.income .stat-value{color:var(--success)}
+.stat-card.expense .stat-value{color:var(--accent)}
+.stat-card.balance .stat-value{color:var(--text)}
+.stat-card.balance.negative .stat-value{color:var(--danger)}
+.stat-card.balance.negative{border-color:rgba(252,92,125,.35);animation:flashBorder 1.5s ease-in-out infinite}
+@keyframes flashBorder{0%,100%{border-color:rgba(252,92,125,.35)}50%{border-color:rgba(252,92,125,.7)}}
+
+/* ── Warning banner ── */
+#warningBanner{
+  background:rgba(252,92,125,.1);border:1.5px solid rgba(252,92,125,.4);
+  color:var(--danger);border-radius:12px;padding:.9rem 1.2rem;
+  font-size:.88rem;font-weight:600;margin-bottom:1.5rem;
+  display:none;align-items:center;gap:.6rem;animation:fadeIn .3s ease;
+}
+
+/* ── Category bars ── */
+.cat-grid{display:grid;gap:.85rem}
+.cat-row{display:grid;grid-template-columns:110px 1fr 70px 60px;gap:.75rem;align-items:center}
+@media(max-width:480px){.cat-row{grid-template-columns:90px 1fr 55px}}
+
+.cat-name{font-size:.83rem;font-weight:600;display:flex;align-items:center;gap:.4rem}
+.cat-track{height:7px;background:var(--surface2);border-radius:99px;overflow:hidden}
+.cat-fill{height:100%;border-radius:99px;background:var(--accent2);transition:width .7s cubic-bezier(.4,0,.2,1)}
+.cat-row.top-cat .cat-fill{background:linear-gradient(90deg,var(--accent),#8fff5a)}
+.cat-row.top-cat .cat-name::after{content:' ★';color:var(--accent);font-size:.7rem}
+.cat-pct{font-size:.8rem;color:var(--accent2);font-weight:700;text-align:right}
+.cat-row.top-cat .cat-pct{color:var(--accent)}
+.cat-amount{font-size:.78rem;color:var(--muted);text-align:right}
+@media(max-width:480px){.cat-amount{display:none}}
+
+/* ── Expense table ── */
+.tbl-wrap{overflow-x:auto;margin-top:.5rem}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+thead th{
+  text-align:left;padding:.65rem .9rem;
+  font-size:.7rem;font-weight:700;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.8px;
+  border-bottom:1px solid var(--border);white-space:nowrap;
+}
+tbody tr{border-bottom:1px solid rgba(255,255,255,.04);transition:background .15s}
+tbody tr:hover{background:rgba(255,255,255,.03)}
+tbody td{padding:.65rem .9rem;vertical-align:middle}
+tbody tr:last-child{border-bottom:none}
+
+.cat-pill{
+  display:inline-flex;align-items:center;gap:.35rem;
+  padding:.25rem .65rem;border-radius:99px;
+  font-size:.75rem;font-weight:600;
+}
+.amount-cell{font-family:'DM Serif Display',serif;font-size:1rem}
+.note-cell{color:var(--muted);font-size:.8rem;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.date-cell{color:var(--muted);font-size:.78rem;white-space:nowrap}
+
+.empty-state{
+  text-align:center;padding:3rem 1rem;color:var(--muted);
+}
+.empty-state .icon{font-size:2.5rem;margin-bottom:.75rem;opacity:.4}
+.empty-state p{font-size:.9rem}
+
+/* ── Category colors ── */
+.cat-Rent{background:rgba(124,92,252,.15);color:#a78bfa}
+.cat-Food{background:rgba(59,220,143,.15);color:#3bdc8f}
+.cat-Transport{background:rgba(245,158,11,.15);color:#fbbf24}
+.cat-Recharge{background:rgba(14,165,233,.15);color:#38bdf8}
+.cat-Entertainment{background:rgba(252,92,125,.15);color:#fc5c7d}
+.cat-Misc{background:rgba(201,245,59,.15);color:#c9f53b}
+
+.fill-Rent{background:#7c5cfc}
+.fill-Food{background:#3bdc8f}
+.fill-Transport{background:#fbbf24}
+.fill-Recharge{background:#38bdf8}
+.fill-Entertainment{background:#fc5c7d}
+.fill-Misc{background:#c9f53b}
+
+/* ── Animations ── */
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.animate{animation:fadeIn .35s ease}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--surface)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px}
+
+/* ── Error text ── */
+.err-msg{font-size:.75rem;color:var(--danger);margin-top:.3rem;display:none}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- Header -->
+  <header class="app-header">
+    <div class="logo">
+      <span class="logo-word">spendly</span>
+      <div class="logo-dot"></div>
+    </div>
+    <div id="welcomeChip">
+      👋 &nbsp;Hey, <span id="chipName"></span>
+    </div>
+  </header>
+
+  <!-- ── Profile Setup ── -->
+  <div class="card" id="profileCard">
+    <div class="card-title">
+      Your Profile <span class="badge">Step 1</span>
+    </div>
+
+    <!-- Form view -->
+    <div id="profileForm">
+      <div class="form-row">
+        <div class="field">
+          <label for="pName">Full Name</label>
+          <input type="text" id="pName" placeholder="e.g. Arjun Kapoor"/>
+          <div class="err-msg" id="pNameErr">Name is required.</div>
+        </div>
+        <div class="field">
+          <label for="pIncome">Monthly Income (₹)</label>
+          <input type="number" id="pIncome" placeholder="e.g. 60000" min="1"/>
+          <div class="err-msg" id="pIncomeErr">Enter a valid positive income.</div>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="saveProfile()">💾 Save Profile</button>
+      </div>
+    </div>
+
+    <!-- Saved view -->
+    <div id="profileDisplay">
+      <div class="profile-row">
+        <div class="avatar" id="avatarLetter"></div>
+        <div class="profile-info">
+          <h2 id="dispName"></h2>
+          <p id="dispIncome"></p>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="editProfile()" style="margin-left:auto">✏️ Edit</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Stats Bar ── -->
+  <div class="stats-bar" id="statsBar" style="display:none">
+    <div class="stat-card income">
+      <div class="stat-label">Monthly Income</div>
+      <div class="stat-value" id="sIncome">₹0</div>
+      <div class="stat-sub">This month's budget</div>
+    </div>
+    <div class="stat-card expense">
+      <div class="stat-label">Total Spent</div>
+      <div class="stat-value" id="sExpense">₹0</div>
+      <div class="stat-sub" id="sExpenseSub">0 transactions</div>
+    </div>
+    <div class="stat-card balance" id="sBalanceCard">
+      <div class="stat-label">Remaining</div>
+      <div class="stat-value" id="sBalance">₹0</div>
+      <div class="stat-sub" id="sBalanceSub">—</div>
+    </div>
+  </div>
+
+  <!-- Warning -->
+  <div id="warningBanner">⚠️ You're overspending! Your expenses exceed your monthly income.</div>
+
+  <!-- ── Add Expense ── -->
+  <div class="card" id="addExpenseCard" style="display:none">
+    <div class="card-title">Add Expense <span class="badge">Daily</span></div>
+    <div class="form-row">
+      <div class="field">
+        <label for="eDate">Date</label>
+        <input type="date" id="eDate"/>
+      </div>
+      <div class="field">
+        <label for="eCat">Category</label>
+        <select id="eCat">
+          <option value="">— Select —</option>
+          <option>Rent</option>
+          <option>Food</option>
+          <option>Transport</option>
+          <option>Recharge</option>
+          <option>Entertainment</option>
+          <option>Misc</option>
+        </select>
+        <div class="err-msg" id="eCatErr">Select a category.</div>
+      </div>
+      <div class="field">
+        <label for="eAmt">Amount (₹)</label>
+        <input type="number" id="eAmt" placeholder="0.00" min="0.01" step="0.01"/>
+        <div class="err-msg" id="eAmtErr">Enter a valid amount.</div>
+      </div>
+      <div class="field">
+        <label for="eNote">Note (optional)</label>
+        <input type="text" id="eNote" placeholder="e.g. Grocery run"/>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="addExpense()">➕ Add Expense</button>
+    </div>
+  </div>
+
+  <!-- ── Category Breakdown ── -->
+  <div class="card" id="breakdownCard" style="display:none">
+    <div class="card-title">Spending Breakdown</div>
+    <div class="cat-grid" id="catGrid"></div>
+  </div>
+
+  <!-- ── Expense Table ── -->
+  <div class="card" id="tableCard" style="display:none">
+    <div class="card-title" style="justify-content:space-between">
+      <span>All Expenses</span>
+      <button class="btn btn-danger btn-sm" onclick="clearAll()">🗑 Clear All</button>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Category</th>
+            <th>Amount</th>
+            <th>Note</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="expBody"></tbody>
+      </table>
+      <div class="empty-state" id="emptyState">
+        <div class="icon">🧾</div>
+        <p>No expenses yet. Add your first one above!</p>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /.app -->
+
+<script>
+/* ══════════════════════════════════
+   STATE & CONSTANTS
+══════════════════════════════════ */
+const CATS = ['Rent','Food','Transport','Recharge','Entertainment','Misc'];
+const CAT_ICONS = {Rent:'🏠',Food:'🍔',Transport:'🚌',Recharge:'📱',Entertainment:'🎬',Misc:'🛍️'};
+
+let profile  = JSON.parse(localStorage.getItem('sp_profile'))  || null;
+let expenses = JSON.parse(localStorage.getItem('sp_expenses')) || [];
+
+/* ══════════════════════════════════
+   INIT
+══════════════════════════════════ */
+(function init(){
+  // Default today's date
+  document.getElementById('eDate').value = todayISO();
+
+  if(profile){
+    showProfileDisplay();
+    showExpenseUI();
+  }
+  renderAll();
+})();
+
+function todayISO(){
+  return new Date().toISOString().split('T')[0];
+}
+
+/* ══════════════════════════════════
+   PROFILE
+══════════════════════════════════ */
+function saveProfile(){
+  const name   = document.getElementById('pName').value.trim();
+  const income = parseFloat(document.getElementById('pIncome').value);
+
+  let ok = true;
+  if(!name){ show('pNameErr'); addClass('pName','err'); ok=false; }
+  else     { hide('pNameErr'); remClass('pName','err'); }
+  if(!income||income<=0){ show('pIncomeErr'); addClass('pIncome','err'); ok=false; }
+  else                  { hide('pIncomeErr'); remClass('pIncome','err'); }
+  if(!ok) return;
+
+  profile = {name, income};
+  localStorage.setItem('sp_profile', JSON.stringify(profile));
+  showProfileDisplay();
+  showExpenseUI();
+  renderAll();
+}
+
+function showProfileDisplay(){
+  hide('profileForm');
+  show('profileDisplay');
+
+  const n = profile.name;
+  document.getElementById('avatarLetter').textContent = n.charAt(0).toUpperCase();
+  document.getElementById('dispName').textContent     = n;
+  document.getElementById('dispIncome').textContent   = `Monthly Income: ${fmt(profile.income)}`;
+  document.getElementById('chipName').textContent     = n.split(' ')[0];
+  document.getElementById('welcomeChip').style.display='flex';
+}
+
+function editProfile(){
+  show('profileForm');
+  hide('profileDisplay');
+  document.getElementById('pName').value   = profile.name;
+  document.getElementById('pIncome').value = profile.income;
+}
+
+function showExpenseUI(){
+  show('statsBar');
+  show('addExpenseCard');
+  show('tableCard');
+}
+
+/* ══════════════════════════════════
+   ADD EXPENSE
+══════════════════════════════════ */
+function addExpense(){
+  const date = document.getElementById('eDate').value;
+  const cat  = document.getElementById('eCat').value;
+  const amt  = parseFloat(document.getElementById('eAmt').value);
+  const note = document.getElementById('eNote').value.trim();
+
+  let ok = true;
+  if(!cat){ show('eCatErr'); addClass('eCat','err'); ok=false; }
+  else    { hide('eCatErr'); remClass('eCat','err'); }
+  if(!amt||amt<=0){ show('eAmtErr'); addClass('eAmt','err'); ok=false; }
+  else            { hide('eAmtErr'); remClass('eAmt','err'); }
+  if(!ok) return;
+
+  const exp = { id: Date.now(), date: date||todayISO(), cat, amt, note };
+  expenses.unshift(exp);
+  save();
+  renderAll();
+
+  // Reset form fields (keep date & category)
+  document.getElementById('eAmt').value  = '';
+  document.getElementById('eNote').value = '';
+}
+
+/* ══════════════════════════════════
+   DELETE EXPENSE
+══════════════════════════════════ */
+function deleteExpense(id){
+  expenses = expenses.filter(e=>e.id!==id);
+  save();
+  renderAll();
+}
+
+/* ══════════════════════════════════
+   CLEAR ALL
+══════════════════════════════════ */
+function clearAll(){
+  if(!confirm('Clear all expense data? This cannot be undone.')) return;
+  expenses = [];
+  save();
+  renderAll();
+}
+
+/* ══════════════════════════════════
+   SAVE TO LOCALSTORAGE
+══════════════════════════════════ */
+function save(){
+  localStorage.setItem('sp_expenses', JSON.stringify(expenses));
+}
+
+/* ══════════════════════════════════
+   RENDER
+══════════════════════════════════ */
+function renderAll(){
+  if(!profile) return;
+
+  const total   = expenses.reduce((s,e)=>s+e.amt,0);
+  const balance = profile.income - total;
+
+  // Stats
+  document.getElementById('sIncome').textContent      = fmt(profile.income);
+  document.getElementById('sExpense').textContent     = fmt(total);
+  document.getElementById('sExpenseSub').textContent  = expenses.length+' transaction'+(expenses.length!==1?'s':'');
+  document.getElementById('sBalance').textContent     = fmt(Math.abs(balance));
+  document.getElementById('sBalanceSub').textContent  = balance>=0 ? 'Available to spend' : 'Over budget by '+fmt(Math.abs(balance));
+
+  const bc = document.getElementById('sBalanceCard');
+  bc.classList.toggle('negative', balance<0);
+
+  // Warning
+  const wb = document.getElementById('warningBanner');
+  wb.style.display = balance<0 ? 'flex' : 'none';
+
+  // Category breakdown
+  renderBreakdown(total);
+
+  // Table
+  renderTable();
+}
+
+function renderBreakdown(total){
+  const catTotals = {};
+  CATS.forEach(c=>{ catTotals[c]=0; });
+  expenses.forEach(e=>{ catTotals[e.cat] = (catTotals[e.cat]||0)+e.amt; });
+
+  const income  = profile.income;
+  const nonZero = CATS.filter(c=>catTotals[c]>0);
+
+  if(nonZero.length===0){ hide('breakdownCard'); return; }
+  show('breakdownCard');
+
+  // Find top cat
+  let topCat='', topVal=-1;
+  CATS.forEach(c=>{ if(catTotals[c]>topVal){topVal=catTotals[c];topCat=c;} });
+
+  const grid = document.getElementById('catGrid');
+  grid.innerHTML = '';
+
+  CATS.forEach(c=>{
+    if(catTotals[c]===0) return;
+    const pct   = income ? Math.min((catTotals[c]/income)*100,100) : 0;
+    const isTop = (c===topCat);
+
+    const row = document.createElement('div');
+    row.className='cat-row'+(isTop?' top-cat':'');
+    row.innerHTML=`
+      <div class="cat-name">${CAT_ICONS[c]} ${c}</div>
+      <div class="cat-track"><div class="cat-fill fill-${c}" style="width:${pct.toFixed(1)}%"></div></div>
+      <div class="cat-pct">${pct.toFixed(1)}%</div>
+      <div class="cat-amount">${fmt(catTotals[c])}</div>
+    `;
+    grid.appendChild(row);
+  });
+}
+
+function renderTable(){
+  const tbody = document.getElementById('expBody');
+  const empty = document.getElementById('emptyState');
+
+  tbody.innerHTML='';
+  if(expenses.length===0){ empty.style.display='block'; return; }
+  empty.style.display='none';
+
+  expenses.forEach(e=>{
+    const tr=document.createElement('tr');
+    tr.className='animate';
+    tr.innerHTML=`
+      <td class="date-cell">${fmtDate(e.date)}</td>
+      <td><span class="cat-pill cat-${e.cat}">${CAT_ICONS[e.cat]} ${e.cat}</span></td>
+      <td class="amount-cell">${fmt(e.amt)}</td>
+      <td class="note-cell" title="${esc(e.note)}">${esc(e.note)||'<span style="opacity:.4">—</span>'}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteExpense(${e.id})">✕</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+/* ══════════════════════════════════
+   HELPERS
+══════════════════════════════════ */
+function fmt(n){
+  return '₹'+Number(n||0).toLocaleString('en-IN',{minimumFractionDigits:0,maximumFractionDigits:2});
+}
+function fmtDate(iso){
+  if(!iso) return '—';
+  const [y,m,d]=iso.split('-');
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${d} ${months[parseInt(m)-1]} ${y}`;
+}
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function show(id){ document.getElementById(id).style.display='block'; }
+function hide(id){ document.getElementById(id).style.display='none'; }
+function addClass(id,cls){ document.getElementById(id).classList.add(cls); }
+function remClass(id,cls){ document.getElementById(id).classList.remove(cls); }
+</script>
+</body>
+</html>
